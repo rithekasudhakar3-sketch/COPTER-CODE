@@ -7,6 +7,7 @@
 
 2. CREATE  BRANCH (GITHUB)
    The branch can be created ,with automatic feature once you create an issue
+   BRANCH NAME : feature/default name
 
 3. COMMIT
    git add .
