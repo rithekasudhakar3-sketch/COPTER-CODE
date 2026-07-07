@@ -1,0 +1,113 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  password      String
+  businessName  String?
+  gstin         String?
+  address       String?
+  logoUrl       String?
+  theme         String    @default("light")
+  currency      String    @default("INR")
+  taxMode       String    @default("split")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  invoices      Invoice[]
+  customers     Customer[]
+  products      Product[]
+}
+
+model Customer {
+  id        String    @id @default(cuid())
+  name      String
+  email     String?
+  phone     String?
+  gstin     String?
+  address   String?
+  user      User      @relation(fields: [userId], references: [id])
+  userId    String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  invoices  Invoice[]
+
+  @@index([userId])
+  @@index([name])
+  @@index([gstin])
+}
+
+model Product {
+  id            String    @id @default(cuid())
+  name          String
+  description   String?
+  hsnCode       String?
+  price         Float
+  gstPercentage Float     @default(18) // e.g. 5, 12, 18, 28
+  stock         Int       @default(0)
+  category      String?
+  user          User      @relation(fields: [userId], references: [id])
+  userId        String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  invoiceItems  InvoiceItem[]
+
+  @@index([userId])
+  @@index([name])
+  @@index([hsnCode])
+  @@index([category])
+}
+
+model Invoice {
+  id              String    @id @default(cuid())
+  invoiceNumber   String    @unique
+  date            DateTime  @default(now())
+  dueDate         DateTime?
+  status          String    @default("Pending") // Pending, Paid, Overdue
+  customer        Customer  @relation(fields: [customerId], references: [id])
+  customerId      String
+  user            User      @relation(fields: [userId], references: [id])
+  userId          String
+  subTotal        Float
+  cgstAmount      Float     @default(0)
+  sgstAmount      Float     @default(0)
+  igstAmount      Float     @default(0)
+  discountAmount  Float     @default(0)
+  grandTotal      Float
+  items           InvoiceItem[]
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([customerId])
+  @@index([invoiceNumber])
+  @@index([date])
+  @@index([status])
+}
+
+model InvoiceItem {
+  id          String   @id @default(cuid())
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  invoiceId   String
+  product     Product  @relation(fields: [productId], references: [id])
+  productId   String
+  quantity    Int
+  unitPrice   Float
+  gstRate     Float
+  cgst        Float
+  sgst        Float
+  igst        Float
+  total       Float
+
+  @@index([invoiceId])
+  @@index([productId])
+}
