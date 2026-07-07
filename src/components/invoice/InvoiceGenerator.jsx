@@ -14,20 +14,25 @@ import { InvoicePreview } from "./InvoicePreview";
 
 const emptyItem = { id: 1, productId: "", name: "", hsnCode: "", quantity: 1, unitPrice: 0, gstRate: 18 };
 
-export function InvoiceGenerator() {
-  const [customers, setCustomers] = useState([]);
-  const [products, setProducts] = useState([]);
-  const [business, setBusiness] = useState(null);
-  const [invoiceData, setInvoiceData] = useState({
-    invoiceNumber: `INV-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`,
-    date: new Date().toISOString().split("T")[0],
+function createInitialInvoiceData() {
+  const now = new Date();
+  return {
+    invoiceNumber: `INV-${now.getFullYear()}-${String(Date.now()).slice(-4)}`,
+    date: now.toISOString().split("T")[0],
     dueDate: "",
     customerId: "",
     customer: null,
     discountPercent: 0,
     isInterState: false,
     status: "Pending",
-  });
+  };
+}
+
+export function InvoiceGenerator() {
+  const [customers, setCustomers] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [business, setBusiness] = useState(null);
+  const [invoiceData, setInvoiceData] = useState(() => createInitialInvoiceData());
   const [items, setItems] = useState([emptyItem]);
   const previewRef = useRef(null);
 

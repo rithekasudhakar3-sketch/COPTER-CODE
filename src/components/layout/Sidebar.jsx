@@ -6,7 +6,7 @@ import { BarChart3, ChevronRight, FileText, LayoutDashboard, LogOut, Package, Se
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
-const navItems = [
+export const navItems = [
   { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { title: "Invoices", href: "/invoices", icon: FileText },
   { title: "Customers", href: "/customers", icon: Users },

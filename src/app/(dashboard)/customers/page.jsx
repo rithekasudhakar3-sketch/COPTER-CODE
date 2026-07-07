@@ -24,21 +24,37 @@ export default function CustomersPage() {
   const [form, setForm] = useState(emptyForm);
 
   const query = useMemo(() => new URLSearchParams({ search, page: String(meta.page), pageSize: "8" }), [search, meta.page]);
-
-  const loadCustomers = async () => {
-    setLoading(true);
-    const res = await fetch(`/api/customers?${query}`);
-    const json = await res.json();
-    if (res.ok) {
-      setCustomers(json.data);
-      setMeta(json.meta);
-    }
-    setLoading(false);
-  };
+  const queryString = query.toString();
 
   useEffect(() => {
-    loadCustomers();
-  }, [query.toString()]);
+    let active = true;
+
+    const loadCustomers = async () => {
+      const frame = requestAnimationFrame(() => {
+        if (active) setLoading(true);
+      });
+
+      try {
+        const res = await fetch(`/api/customers?${query}`);
+        const json = await res.json();
+        if (active && res.ok) {
+          setCustomers(json.data);
+          setMeta(json.meta);
+        }
+      } finally {
+        if (active) {
+          cancelAnimationFrame(frame);
+          setLoading(false);
+        }
+      }
+    };
+
+    void loadCustomers();
+
+    return () => {
+      active = false;
+    };
+  }, [query, queryString]);
 
   const openForm = (customer = null) => {
     setEditing(customer);

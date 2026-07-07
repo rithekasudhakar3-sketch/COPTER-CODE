@@ -25,21 +25,37 @@ export default function ProductsPage() {
   const [form, setForm] = useState(emptyForm);
 
   const query = useMemo(() => new URLSearchParams({ search, page: String(meta.page), pageSize: "8" }), [search, meta.page]);
-
-  const loadProducts = async () => {
-    setLoading(true);
-    const res = await fetch(`/api/products?${query}`);
-    const json = await res.json();
-    if (res.ok) {
-      setProducts(json.data);
-      setMeta(json.meta);
-    }
-    setLoading(false);
-  };
+  const queryString = query.toString();
 
   useEffect(() => {
-    loadProducts();
-  }, [query.toString()]);
+    let active = true;
+
+    const loadProducts = async () => {
+      const frame = requestAnimationFrame(() => {
+        if (active) setLoading(true);
+      });
+
+      try {
+        const res = await fetch(`/api/products?${query}`);
+        const json = await res.json();
+        if (active && res.ok) {
+          setProducts(json.data);
+          setMeta(json.meta);
+        }
+      } finally {
+        if (active) {
+          cancelAnimationFrame(frame);
+          setLoading(false);
+        }
+      }
+    };
+
+    void loadProducts();
+
+    return () => {
+      active = false;
+    };
+  }, [query, queryString]);
 
   const openForm = (product = null) => {
     setEditing(product);
